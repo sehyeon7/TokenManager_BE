@@ -4,8 +4,9 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, UserProfileSerializer, SecureUserSerializer
-from .models import UserProfile
+from .serializers import UserSerializer
+# UserProfileSerializer, SecureUserSerializer
+# from .models import UserProfile
 
 import random
 import string
@@ -19,29 +20,30 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
 def set_token_on_response_cookie(user: User) -> Response:
     token = RefreshToken.for_user(user)
-    user_profile = UserProfile.objects.get(user=user)
-    user_profile_serializer = UserProfileSerializer(user_profile)
-    res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
+    # user_profile = UserProfile.objects.get(user=user)
+    # user_profile_serializer = UserProfileSerializer(user_profile)
+    user_serializer = UserSerializer(user)
+    res = Response(user_serializer.data, status=status.HTTP_200_OK)
     res.set_cookie('refresh_token', value=str(token), samesite='None', secure=True)
     res.set_cookie('access_token', value=str(token.access_token), samesite='None', secure=True)
     return res
 
-def generate_random_string(length=8):
-    characters = string.ascii_letters + string.digits + string.punctuation
-    random_string = ''.join(random.choice(characters) for _ in range(length))
-    return random_string
+# def generate_random_string(length=8):
+#     characters = string.ascii_letters + string.digits + string.punctuation
+#     random_string = ''.join(random.choice(characters) for _ in range(length))
+#     return random_string
 
-def check_valid_username(username):
-    validator = UnicodeUsernameValidator()
-    try:
-        validator(username)
-        return True
-    except:
-        return False
+# def check_valid_username(username):
+#     validator = UnicodeUsernameValidator()
+#     try:
+#         validator(username)
+#         return True
+#     except:
+#         return False
     
-def remove_special_characters(input_string):
-    # 정규표현식으로 특수문자를 찾아서 제거
-    return re.sub(r'[^\w]', '', input_string)
+# def remove_special_characters(input_string):
+#     # 정규표현식으로 특수문자를 찾아서 제거
+#     return re.sub(r'[^\w]', '', input_string)
 
 # Create your views here.   
 class SignupView(APIView):
@@ -108,12 +110,12 @@ class UserInfoView(APIView):
     
     def post(self, request):
         user = request.user
-        userprofile = user.userprofile
+        # userprofile = user.userprofile
         if request.data['password'] == user.password:
             return Response({"detail": "password match."}, status=status.HTTP_200_OK)
-        else:
-            if userprofile.socials_id != "a":
-                return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-            return Response({"detail": "password doesn't match."}, status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     if userprofile.socials_id != "a":
+        #         return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        #     return Response({"detail": "password doesn't match."}, status=status.HTTP_400_BAD_REQUEST)
 
 
